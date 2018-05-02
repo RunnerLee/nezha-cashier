@@ -1,0 +1,10 @@
+<phpunit
+        colors="true"
+        bootstrap="vendor/autoload.php"
+>
+    <testsuites>
+        <testsuite name="nazha-cashier">
+            <directory>./tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
