@@ -366,9 +366,9 @@ abstract class AbstractWechatGateway extends AbstractGateway
         if (!is_null($cert)) {
             $options = [
                 CURLOPT_SSLCERTTYPE => 'PEM',
-                CURLOPT_SSLCERT => file_get_contents($cert),
+                CURLOPT_SSLCERT => $cert,
                 CURLOPT_SSLKEYTYPE => 'PEM',
-                CURLOPT_SSLKEY => file_get_contents($sslKey),
+                CURLOPT_SSLKEY => $sslKey,
             ];
         }
 
