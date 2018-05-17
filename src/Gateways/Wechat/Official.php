@@ -9,6 +9,7 @@ namespace Runner\NezhaCashier\Gateways\Wechat;
 
 use FastD\Http\Request;
 use Runner\NezhaCashier\Exception\GatewayException;
+use Runner\NezhaCashier\Exception\WechatOpenIdException;
 use Runner\NezhaCashier\Requests\Charge;
 
 class Official extends AbstractWechatGateway
@@ -72,7 +73,7 @@ class Official extends AbstractWechatGateway
         $result = json_decode($response->getBody(), true);
 
         if (isset($result['errcode'])) {
-            throw new GatewayException('Wechat Gateway Error: '.$result['errmsg']);
+            throw new WechatOpenIdException($result['errmsg']);
         }
 
         return $result['openid'];

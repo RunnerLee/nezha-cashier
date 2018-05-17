@@ -10,7 +10,7 @@ namespace Runner\NezhaCashier\Gateways\Paypal;
 use FastD\Http\Request;
 use Runner\NezhaCashier\Exception\GatewayException;
 use Runner\NezhaCashier\Exception\GatewayMethodNotSupportException;
-use Runner\NezhaCashier\Exception\PaypalGetTransactionFailedAfterDoCharge;
+use Runner\NezhaCashier\Exception\PaypalChargebackException;
 use Runner\NezhaCashier\Gateways\AbstractGateway;
 use Runner\NezhaCashier\Requests\Charge;
 use Runner\NezhaCashier\Requests\Close;
@@ -275,7 +275,7 @@ class ExpressCheckout extends AbstractGateway
         $transaction = $this->queryTransaction($form->get('order_id'));
 
         if (!isset($transaction['L_EMAIL0'])) {
-            throw new PaypalGetTransactionFailedAfterDoCharge("get transaction failed: {$form->get('order_id')}");
+            throw new PaypalChargebackException("get transaction failed: {$form->get('order_id')}");
         }
 
         return [
