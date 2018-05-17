@@ -11,6 +11,7 @@ use FastD\Http\Request;
 use Runner\NezhaCashier\Exception\GatewayException;
 use Runner\NezhaCashier\Exception\GatewayMethodNotSupportException;
 use Runner\NezhaCashier\Exception\PaypalChargebackException;
+use Runner\NezhaCashier\Exception\PaypalNotifyException;
 use Runner\NezhaCashier\Gateways\AbstractGateway;
 use Runner\NezhaCashier\Requests\Charge;
 use Runner\NezhaCashier\Requests\Close;
@@ -104,6 +105,9 @@ class ExpressCheckout extends AbstractGateway
      */
     public function chargeNotify(array $receives): array
     {
+        if (empty($receives['payment_status']) || 'Completed' !== $receives['payment_status']) {
+            throw new PaypalNotifyException(http_build_query($receives));
+        }
         $transaction = $this->queryTransaction($receives['custom']);
 
         return [
