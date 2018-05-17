@@ -17,12 +17,11 @@ use Runner\NezhaCashier\Utils\Config;
 use Runner\NezhaCashier\Utils\Str;
 
 /**
- * Class Cashier
+ * Class Cashier.
  *
  * @method charge(array $parameters)
  * @method query(array $parameters)
  * @method refund(array $parameters)
- * @package Runner\NezhaCashier
  */
 class Cashier
 {
@@ -128,6 +127,7 @@ class Cashier
             }
             $class = self::$extendGateways[$class];
         }
+
         return new $class($this->config);
     }
 
