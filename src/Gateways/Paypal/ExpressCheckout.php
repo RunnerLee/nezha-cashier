@@ -110,7 +110,7 @@ class ExpressCheckout extends AbstractGateway
      */
     public function chargeNotify(array $receives): array
     {
-        if (empty($receives['payment_status']) || 'Completed' !== $receives['payment_status']) {
+        if (($receives['payment_status'] ?? '') !== 'Completed') {
             throw new PaypalNotifyException(http_build_query($receives));
         }
         $transaction = $this->queryTransaction($receives['custom']);
@@ -166,9 +166,19 @@ class ExpressCheckout extends AbstractGateway
      */
     public function verify($receives): bool
     {
-        $response = (new Request('POST', self::WEB_GATEWAY))->send("cmd=_notify-validate&{$receives}");
-
-        return 'VERIFIED' === (string) $response->getBody();
+        return HttpClient::request(
+            'POST',
+            self::WEB_GATEWAY,
+            [
+                RequestOptions::BODY =>  "cmd=_notify-validate&{$receives}",
+            ],
+            function (ResponseInterface $response) {
+                return 'VERIFIED' === (string) $response->getBody();
+            },
+            function (RequestException $exception) {
+                throw new RequestGatewayException('verify paypal notification failed', $exception);
+            }
+        );
     }
 
     /**
