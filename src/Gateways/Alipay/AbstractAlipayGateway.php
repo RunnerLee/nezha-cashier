@@ -7,15 +7,20 @@
 
 namespace Runner\NezhaCashier\Gateways\Alipay;
 
-use FastD\Http\Request;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\RequestOptions;
+use Psr\Http\Message\ResponseInterface;
 use Runner\NezhaCashier\Exception\GatewayException;
 use Runner\NezhaCashier\Exception\GatewayMethodNotSupportException;
+use Runner\NezhaCashier\Exception\RequestGatewayException;
 use Runner\NezhaCashier\Gateways\AbstractGateway;
 use Runner\NezhaCashier\Requests\Charge;
 use Runner\NezhaCashier\Requests\Close;
 use Runner\NezhaCashier\Requests\Query;
 use Runner\NezhaCashier\Requests\Refund;
 use InvalidArgumentException;
+use Runner\NezhaCashier\Utils\Amount;
+use Runner\NezhaCashier\Utils\HttpClient;
 
 abstract class AbstractAlipayGateway extends AbstractGateway
 {
@@ -31,7 +36,7 @@ abstract class AbstractAlipayGateway extends AbstractGateway
         $content = array_merge(
             [
                 'out_trade_no' => $form->get('order_id'),
-                'total_amount' => bcadd($form->get('amount'), 0, 2),
+                'total_amount' => Amount::centToDollar($form->get('amount')),
                 'subject' => $form->get('subject'),
                 'body' => $form->get('description'),
             ],
@@ -70,7 +75,7 @@ abstract class AbstractAlipayGateway extends AbstractGateway
             array_merge(
                 [
                     'out_trade_no' => $form->get('order_id'),
-                    'refund_amount' => $form->get('refund_amount'),
+                    'refund_amount' => Amount::centToDollar($form->get('refund_amount')),
                     'refund_reason' => $form->get('reason'),
                     'out_request_no' => $form->get('refund_id'),
                 ],
@@ -86,7 +91,7 @@ abstract class AbstractAlipayGateway extends AbstractGateway
 
         return [
             'refund_sn' => $response['trade_no'],
-            'refund_amount' => $response['refund_fee'],
+            'refund_amount' => Amount::dollarToCent($response['refund_fee']),
             'raw' => $response,
         ];
     }
@@ -133,7 +138,7 @@ abstract class AbstractAlipayGateway extends AbstractGateway
             'status' => $this->formatTradeStatus($result['trade_status']),
             'trade_sn' => $result['trade_no'],
             'buyer_identifiable_id' => $result['buyer_user_id'],
-            'amount' => $result['total_amount'],
+            'amount' => Amount::dollarToCent($result['total_amount']),
             'buyer_name' => $result['buyer_logon_id'],
             // 支付宝打款时间, 作为付款时间有些争议
             'paid_at' => isset($result['send_pay_date']) ? strtotime($result['send_pay_date']) : 0,
@@ -141,6 +146,11 @@ abstract class AbstractAlipayGateway extends AbstractGateway
         ];
     }
 
+    /**
+     * @param array $receives
+     *
+     * @return array
+     */
     public function chargeNotify(array $receives): array
     {
         return [
@@ -148,7 +158,7 @@ abstract class AbstractAlipayGateway extends AbstractGateway
             'status' => $this->formatTradeStatus($receives['trade_status']),
             'trade_sn' => $receives['trade_no'],
             'buyer_identifiable_id' => $receives['buyer_id'],
-            'amount' => $receives['receipt_amount'] ?? 0,
+            'amount' => Amount::dollarToCent($receives['receipt_amount'] ?? 0),
             'buyer_name' => '',
             'paid_at' => (isset($receives['gmt_payment']) ? strtotime($receives['gmt_payment']) : 0),
             'raw' => $receives,
@@ -298,28 +308,38 @@ abstract class AbstractAlipayGateway extends AbstractGateway
      *
      * @return array
      */
-    protected static function request(array $parameters): array
+    protected function request(array $parameters): array
     {
-        $response = (new Request('POST', self::OPENAPI_GATEWAY))->send($parameters);
+        return HttpClient::request(
+            'POST',
+            self::OPENAPI_GATEWAY,
+            [
+                RequestOptions::FORM_PARAMS => $parameters,
+            ],
+            function (ResponseInterface $response) use ($parameters) {
+                $result = json_decode(mb_convert_encoding($response->getBody(), 'utf-8', 'gb2312'), true);
 
-        if (!$response->isSuccessful()) {
-            throw new GatewayException('Alipay Gateway Error.', $response);
-        }
+                $index = str_replace('.', '_', $parameters['method']).'_response';
 
-        $result = json_decode(mb_convert_encoding($response->getBody(), 'utf-8', 'gb2312'), true);
+                if ('10000' !== $result[$index]['code']) {
+                    throw new GatewayException(
+                        sprintf(
+                            'Alipay Gateway Error: %s, code: %s, sub_code: %s, sub_msg: %s',
+                            $result[$index]['msg'],
+                            $result[$index]['code'],
+                            $result[$index]['sub_code'],
+                            $result[$index]['code']
+                        ),
+                        $result
+                    );
+                }
 
-        $index = str_replace('.', '_', $parameters['method']).'_response';
-
-        if ('10000' !== $result[$index]['code']) {
-            throw new GatewayException(
-                'Alipay Gateway Error: '.$result[$index]['msg']
-                .'. sub_code: '.$result[$index]['sub_code']
-                .'. sub_msg: '.$result[$index]['sub_msg'],
-                $result[$index]['code']
-            );
-        }
-
-        return $result[$index];
+                return $result[$index];
+            },
+            function (RequestException $exception) {
+                throw new RequestGatewayException('Alipay Gateway Error', $exception);
+            }
+        );
     }
 
     /**

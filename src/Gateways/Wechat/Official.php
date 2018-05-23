@@ -7,10 +7,13 @@
 
 namespace Runner\NezhaCashier\Gateways\Wechat;
 
-use FastD\Http\Request;
-use Runner\NezhaCashier\Exception\GatewayException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\RequestOptions;
+use Psr\Http\Message\ResponseInterface;
+use Runner\NezhaCashier\Exception\RequestGatewayException;
 use Runner\NezhaCashier\Exception\WechatOpenIdException;
 use Runner\NezhaCashier\Requests\Charge;
+use Runner\NezhaCashier\Utils\HttpClient;
 
 class Official extends AbstractWechatGateway
 {
@@ -64,18 +67,24 @@ class Official extends AbstractWechatGateway
             'grant_type' => 'authorization_code',
         ];
 
-        $response = (new Request('GET', static::JSAPI_AUTH_URL))->send($parameters);
+        return HttpClient::request(
+            'GET',
+            static::JSAPI_AUTH_URL,
+            [
+                RequestOptions::QUERY => $parameters,
+            ],
+            function (ResponseInterface $response) {
+                $result = json_decode($response->getBody(), true);
 
-        if (!$response->isSuccessful()) {
-            throw new GatewayException('Wechat Gateway Error.', (string) $response->getBody());
-        }
+                if (isset($result['errcode'])) {
+                    throw new WechatOpenIdException($result['errmsg']);
+                }
 
-        $result = json_decode($response->getBody(), true);
-
-        if (isset($result['errcode'])) {
-            throw new WechatOpenIdException($result['errmsg']);
-        }
-
-        return $result['openid'];
+                return $result['openid'];
+            },
+            function (RequestException $exception) {
+                throw new RequestGatewayException('Wechat Gateway Error', $exception);
+            }
+        );
     }
 }

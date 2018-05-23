@@ -7,13 +7,17 @@
 
 namespace Runner\NezhaCashier\Gateways\Wechat;
 
-use FastD\Http\Request;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\RequestOptions;
+use Psr\Http\Message\ResponseInterface;
 use Runner\NezhaCashier\Exception\GatewayException;
+use Runner\NezhaCashier\Exception\RequestGatewayException;
 use Runner\NezhaCashier\Gateways\AbstractGateway;
 use Runner\NezhaCashier\Requests\Charge;
 use Runner\NezhaCashier\Requests\Close;
 use Runner\NezhaCashier\Requests\Query;
 use Runner\NezhaCashier\Requests\Refund;
+use Runner\NezhaCashier\Utils\HttpClient;
 
 abstract class AbstractWechatGateway extends AbstractGateway
 {
@@ -44,7 +48,7 @@ abstract class AbstractWechatGateway extends AbstractGateway
                     'body' => $form->get('subject'),
                     'out_trade_no' => $form->get('order_id'),
                     'fee_type' => $form->get('currency'),
-                    'total_fee' => $this->formatAmount($form->get('amount')),
+                    'total_fee' => $form->get('amount'),
                     'spbill_create_ip' => $form->get('user_ip'),
                     'trade_type' => $this->getTradeType(),
                     'notify_url' => $this->config->get('notify_url'),
@@ -73,8 +77,8 @@ abstract class AbstractWechatGateway extends AbstractGateway
                 [
                     'out_trade_no' => $form->get('order_id'),
                     'out_refund_no' => $form->get('refund_id'),
-                    'total_fee' => $this->formatAmount($form->get('total_amount')),
-                    'refund_fee' => $this->formatAmount($form->get('refund_amount')),
+                    'total_fee' => $form->get('total_amount'),
+                    'refund_fee' => $form->get('refund_amount'),
                     'refund_desc' => $form->get('reason'),
                 ],
                 $form->get('extras')
@@ -90,7 +94,7 @@ abstract class AbstractWechatGateway extends AbstractGateway
 
         return [
             'refund_sn' => $response['refund_id'],
-            'refund_amount' => ($response['coupon_refund_fee'] + $response['cash_refund_fee']) / 100,
+            'refund_amount' => ($response['coupon_refund_fee'] + $response['cash_refund_fee']),
             'raw' => $response,
         ];
     }
@@ -139,7 +143,7 @@ abstract class AbstractWechatGateway extends AbstractGateway
         $status = $this->formatTradeStatus($result['trade_state']);
 
         if ('paid' === $status) {
-            $amount = ($result['cash_fee'] + ($result['coupon_fee'] ?? 0)) / 100;
+            $amount = $result['cash_fee'] + ($result['coupon_fee'] ?? 0);
         }
 
         return [
@@ -167,7 +171,7 @@ abstract class AbstractWechatGateway extends AbstractGateway
      */
     public function chargeNotify(array $receives): array
     {
-        $amount = ($receives['cash_fee'] + ($receives['coupon_fee'] ?? 0)) / 100;
+        $amount = $receives['cash_fee'] + ($receives['coupon_fee'] ?? 0);
 
         return [
             'order_id' => $receives['out_trade_no'],
@@ -362,42 +366,38 @@ abstract class AbstractWechatGateway extends AbstractGateway
      */
     protected function request($url, array $payload, $cert = null, $sslKey = null): array
     {
-        $options = [];
+        $options = [
+            'body' => $this->generateXml($payload),
+        ];
         if (!is_null($cert)) {
-            $options = [
-                CURLOPT_SSLCERTTYPE => 'PEM',
-                CURLOPT_SSLCERT => $cert,
-                CURLOPT_SSLKEYTYPE => 'PEM',
-                CURLOPT_SSLKEY => $sslKey,
-            ];
+            $options[RequestOptions::CERT] = $cert;
+            $options[RequestOptions::SSL_KEY] = $sslKey;
         }
 
-        $response = (new Request('POST', $url))->withOptions($options)->send($this->generateXml($payload));
+        return HttpClient::request(
+            'POST',
+            $url,
+            $options,
+            function (ResponseInterface $response) {
+                $result = $this->parseXml((string) $response->getBody());
 
-        if (!$response->isSuccessful()) {
-            throw new GatewayException('Wechat Gateway Error.', (string) $response->getBody());
-        }
+                if (isset($result['err_code']) || 'FAIL' === $result['return_code']) {
+                    throw new GatewayException(
+                        sprintf(
+                            'Wechat Gateway Error: %s, %s',
+                            $result['return_msg'] ?? '',
+                            $result['err_code_des'] ?? ''
+                        ),
+                        $result
+                    );
+                }
 
-        $result = $this->parseXml((string) $response->getBody());
-
-        if (isset($result['err_code']) || 'FAIL' === $result['return_code']) {
-            throw new GatewayException(
-                'Wechat Gateway Error: '.($result['return_msg'] ?? '').' '.($result['err_code_des'] ?? ''),
-                $result
-            );
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param $amount
-     *
-     * @return int
-     */
-    protected function formatAmount($amount): int
-    {
-        return (int) ($amount * 1000 / 10);
+                return $result;
+            },
+            function (RequestException $exception) {
+                throw new RequestGatewayException('Wechat Gateway Error.', $exception);
+            }
+        );
     }
 
     /**

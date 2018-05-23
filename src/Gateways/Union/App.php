@@ -34,7 +34,7 @@ class App extends AbstractUnionGateway
                     'channelType' => '08',
                     'orderId' => $form->get('order_id'),
                     'txnTime' => date('YmdHis', $form->get('created_at')),
-                    'txnAmt' => (int) ($form->get('amount') * 1000 / 10),
+                    'txnAmt' => $form->get('amount'),
                     'currencyCode' => '156',
                     'orderDesc' => $form->get('description'),
                 ],

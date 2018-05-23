@@ -31,7 +31,7 @@ class Web extends AbstractUnionGateway
                     'backUrl' => $this->config->get('notify_url'),
                     'channelType' => '08',
                     'orderId' => $form->get('order_id'),
-                    'txnAmt' => (int) ($form->get('amount') * 1000 / 10),
+                    'txnAmt' => $form->get('amount'),
                     'currencyCode' => '156',
                     'defaultPayType' => '0001',
                 ],
@@ -73,7 +73,7 @@ class Web extends AbstractUnionGateway
             'status' => $this->formatTradeStatus($response['origRespCode']),
             'trade_sn' => $response['queryId'] ?? '',
             'buyer_identifiable_id' => '',
-            'amount' => ($response['settleAmt'] ?? 0) / 100,
+            'amount' => ($response['settleAmt'] ?? 0),
             'buyer_name' => '',
             'raw' => $response,
         ];

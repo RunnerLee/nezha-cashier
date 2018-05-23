@@ -7,16 +7,21 @@
 
 namespace Runner\NezhaCashier\Gateways\Paypal;
 
-use FastD\Http\Request;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\RequestOptions;
+use Psr\Http\Message\ResponseInterface;
 use Runner\NezhaCashier\Exception\GatewayException;
 use Runner\NezhaCashier\Exception\GatewayMethodNotSupportException;
 use Runner\NezhaCashier\Exception\PaypalChargebackException;
 use Runner\NezhaCashier\Exception\PaypalNotifyException;
+use Runner\NezhaCashier\Exception\RequestGatewayException;
 use Runner\NezhaCashier\Gateways\AbstractGateway;
 use Runner\NezhaCashier\Requests\Charge;
 use Runner\NezhaCashier\Requests\Close;
 use Runner\NezhaCashier\Requests\Query;
 use Runner\NezhaCashier\Requests\Refund;
+use Runner\NezhaCashier\Utils\Amount;
+use Runner\NezhaCashier\Utils\HttpClient;
 
 class ExpressCheckout extends AbstractGateway
 {
@@ -87,7 +92,7 @@ class ExpressCheckout extends AbstractGateway
             'buyer_identifiable_id' => $result['L_EMAIL0'],
             'buyer_name' => $result['L_EMAIL0'],
             'buyer_email' => $result['L_EMAIL0'],
-            'amount' => $result['L_AMT0'],
+            'amount' => Amount::dollarToCent($result['L_AMT0']),
             'tax' => abs($result['L_FEEAMT0'] ?? 0),
             'raw' => $result,
         ];
@@ -114,7 +119,7 @@ class ExpressCheckout extends AbstractGateway
             'order_id' => $receives['custom'],
             'status' => 'paid',
             'trade_sn' => $receives['txn_id'],
-            'amount' => $receives['payment_gross'],
+            'amount' => Amount::dollarToCent($receives['payment_gross']),
             'buyer_name' => $transaction['L_NAME0'],
             'buyer_email' => $transaction['L_EMAIL0'],
             'currency' => $receives['mc_currency'],
@@ -219,7 +224,7 @@ class ExpressCheckout extends AbstractGateway
             array_merge(
                 [
                     'METHOD' => 'SetExpressCheckout',
-                    'AMT' => $form->get('amount'),
+                    'AMT' => Amount::centToDollar($form->get('amount')),
                     'CUSTOM' => $form->get('order_id'),
                     'CURRENCYCODE' => strtoupper($form->get('currency')),
                     'PAYMENTACTION' => 'Sale',
@@ -260,7 +265,7 @@ class ExpressCheckout extends AbstractGateway
             array_merge(
                 [
                     'METHOD' => 'DoExpressCheckoutPayment',
-                    'PAYMENTREQUEST_0_AMT' => $form->get('amount'),
+                    'PAYMENTREQUEST_0_AMT' => Amount::centToDollar($form->get('amount')),
                     // 'TOKEN' => $form->find('extras.token'),
                     // 'PAYERID' => $form->find('extras.payer_id'),
                 ],
@@ -289,7 +294,7 @@ class ExpressCheckout extends AbstractGateway
                 'status' => 'paid',
                 'trade_sn' => $result['PAYMENTINFO_0_TRANSACTIONID'],
                 'buyer_identifiable_id' => $transaction['L_EMAIL0'],
-                'amount' => $result['PAYMENTINFO_0_AMT'],
+                'amount' => Amount::dollarToCent($result['PAYMENTINFO_0_AMT']),
                 'tax' => $result['PAYMENTINFO_0_FEEAMT'],
                 'currency' => $result['PAYMENTINFO_0_CURRENCYCODE'],
                 'buyer_name' => $transaction['L_NAME0'],
@@ -345,33 +350,37 @@ class ExpressCheckout extends AbstractGateway
 
     /**
      * @param $url
-     * @param $payload
+     * @param array $payload
      *
      * @return array
      */
-    protected function request($url, $payload): array
+    protected function request($url, array $payload): array
     {
-        $request = (new Request('POST', $url));
+        $options = [
+            RequestOptions::FORM_PARAMS => $payload,
+        ];
 
         if ($this->config->get('by_proxy', false)) {
-            $request->withOptions(
-                [
-                    CURLOPT_PROXYTYPE => CURLPROXY_SOCKS5,
-                    CURLOPT_PROXY => $this->config->get('proxy'),
-                ]
-            );
+            $options[RequestOptions::PROXY] = $this->config->get('proxy');
         }
 
-        $response = $request->send($payload);
+        return HttpClient::request(
+            'POST',
+            $url,
+            $options,
+            function (ResponseInterface $response) {
+                $result = [];
+                parse_str((string) $response->getBody(), $result);
 
-        $result = [];
+                if ('Success' !== ($result['ACK'] ?? '')) {
+                    throw new GatewayException('Paypal Gateway Error'.$result['L_LONGMESSAGE0'], $result);
+                }
 
-        parse_str((string) $response->getBody(), $result);
-
-        if ('Success' !== ($result['ACK'] ?? '')) {
-            throw new GatewayException('Paypal Gateway Error: '.$result['L_LONGMESSAGE0'], $result);
-        }
-
-        return $result;
+                return $result;
+            },
+            function (RequestException $exception) {
+                throw new RequestGatewayException('Paypal Gateway Error', $exception);
+            }
+        );
     }
 }

@@ -8,12 +8,16 @@
 namespace Runner\NezhaCashier\Gateways\Union;
 
 use DateTime;
-use FastD\Http\Request;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\RequestOptions;
+use Psr\Http\Message\ResponseInterface;
 use Runner\NezhaCashier\Exception\GatewayException;
 use Runner\NezhaCashier\Exception\GatewayMethodNotSupportException;
+use Runner\NezhaCashier\Exception\RequestGatewayException;
 use Runner\NezhaCashier\Gateways\AbstractGateway;
 use Runner\NezhaCashier\Requests\Close;
 use Runner\NezhaCashier\Requests\Refund;
+use Runner\NezhaCashier\Utils\HttpClient;
 
 abstract class AbstractUnionGateway extends AbstractGateway
 {
@@ -59,7 +63,7 @@ abstract class AbstractUnionGateway extends AbstractGateway
             'status' => 'paid',
             'trade_sn' => $receives['queryId'],
             'buyer_identifiable_id' => '',
-            'amount' => $receives['settleAmt'] / 100,
+            'amount' => $receives['settleAmt'],
             'buyer_name' => '',
             'paid_at' => DateTime::createFromFormat('mdHis', $receives['traceTime'])->getTimestamp(),
             'raw' => $receives,
@@ -241,21 +245,27 @@ abstract class AbstractUnionGateway extends AbstractGateway
      */
     protected function request($url, array $parameters): array
     {
-        $response = (new Request('POST', $url))->send($parameters);
+        return HttpClient::request(
+            'POST',
+            $url,
+            [
+                RequestOptions::FORM_PARAMS => $parameters,
+            ],
+            function (ResponseInterface $response) {
+                $result = $this->parseResponse((string) $response->getBody());
 
-        if (!$response->isSuccessful()) {
-            throw new GatewayException();
-        }
+                if ('00' !== $result['respCode']) {
+                    throw new GatewayException(
+                        'Union Gateway Error:'.$result['respMsg'],
+                        $result
+                    );
+                }
 
-        $result = $this->parseResponse((string) $response->getBody());
-
-        if ('00' !== $result['respCode']) {
-            throw new GatewayException(
-                'Union Gateway Error:'.$result['respMsg'],
-                $result
-            );
-        }
-
-        return $result;
+                return $result;
+            },
+            function (RequestException $exception) {
+                throw new RequestGatewayException('Union Gateway Error.', $exception);
+            }
+        );
     }
 }

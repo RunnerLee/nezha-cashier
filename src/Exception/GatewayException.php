@@ -11,9 +11,9 @@ use RuntimeException;
 
 class GatewayException extends RuntimeException
 {
-    public $raw;
+    protected $raw;
 
-    public function __construct(string $message = '', $raw = null)
+    public function __construct(string $message, $raw = null)
     {
         $this->raw = $raw;
 
