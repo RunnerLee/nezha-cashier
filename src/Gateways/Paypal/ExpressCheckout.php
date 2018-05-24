@@ -170,7 +170,7 @@ class ExpressCheckout extends AbstractGateway
             'POST',
             self::WEB_GATEWAY,
             [
-                RequestOptions::BODY =>  "cmd=_notify-validate&{$receives}",
+                RequestOptions::BODY => "cmd=_notify-validate&{$receives}",
             ],
             function (ResponseInterface $response) {
                 return 'VERIFIED' === (string) $response->getBody();

@@ -10,6 +10,9 @@ namespace Runner\NezhaCashier;
 use Runner\NezhaCashier\Contracts\GatewayInterface;
 use Runner\NezhaCashier\Exception\InvalidNotificationException;
 use Runner\NezhaCashier\Gateways\AbstractGateway;
+use Runner\NezhaCashier\Responses\Charge;
+use Runner\NezhaCashier\Responses\Query;
+use Runner\NezhaCashier\Responses\Refund;
 use Runner\NezhaCashier\Utils\AbstractOption;
 use Runner\NezhaCashier\Utils\Collection;
 use InvalidArgumentException;
@@ -19,9 +22,9 @@ use Runner\NezhaCashier\Utils\Str;
 /**
  * Class Cashier.
  *
- * @method charge(array $parameters)
- * @method query(array $parameters)
- * @method refund(array $parameters)
+ * @method Charge charge(array $parameters)
+ * @method Query query(array $parameters):
+ * @method Refund refund(array $parameters)
  */
 class Cashier
 {
