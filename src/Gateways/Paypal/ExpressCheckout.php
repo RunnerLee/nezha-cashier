@@ -121,7 +121,7 @@ class ExpressCheckout extends AbstractGateway
             'trade_sn' => $receives['txn_id'],
             'amount' => Amount::dollarToCent($receives['payment_gross']),
             'buyer_name' => $transaction['L_NAME0'],
-            'buyer_email' => $transaction['L_EMAIL0'],
+            'buyer_email' => $transaction['L_EMAIL0'] ?? '',
             'currency' => $receives['mc_currency'],
             'buyer_identifiable_id' => $transaction['L_EMAIL0'],
             'paid_at' => strtotime($receives['payment_date']),
@@ -383,7 +383,7 @@ class ExpressCheckout extends AbstractGateway
                 parse_str((string) $response->getBody(), $result);
 
                 if ('Success' !== ($result['ACK'] ?? '')) {
-                    throw new GatewayException('Paypal Gateway Error'.$result['L_LONGMESSAGE0'], $result);
+                    throw new GatewayException('Paypal Gateway Error: '.$result['L_LONGMESSAGE0'], $result);
                 }
 
                 return $result;
