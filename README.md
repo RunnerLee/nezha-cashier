@@ -19,6 +19,7 @@
 | union_web | 银联网页支付 | 支付/支付查询 | 支付通知 | 较旧版本 |
 | union_app | 银联网页支付 | 支付 | 支付通知 | 较旧版本 |
 | paypal_express_checkout | PayPal 快速结账 | 支付/支付查询 | 支付通知 | 不稳定 |
+| pingan_wechat_h5 | 平安银行微信H5支付 | 支付/支付查询/退款 | 支付 | |
 
 ### 介绍
 

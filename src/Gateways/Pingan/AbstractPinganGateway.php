@@ -57,7 +57,7 @@ abstract class AbstractPinganGateway extends AbstractGateway
             'notify_url' => $this->config->get('notify_url'),
             'tag' => $this->config->get('tag', null)
         ], $this->prepareCharge($form));
-        var_dump($options);
+
         $response = $this->client->charge($options);
 
         return $this->doCharge($response, $form);
