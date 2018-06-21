@@ -28,10 +28,10 @@ class Charge extends AbstractOption
         );
         $resolver->setDefaults(
             [
-                'user_ip' => '127.0.0.1',
+                'user_ip'    => '127.0.0.1',
                 'return_url' => '',
-                'show_url' => '',
-                'body' => '',
+                'show_url'   => '',
+                'body'       => '',
                 'expired_at' => '',
                 'created_at' => '',
             ]

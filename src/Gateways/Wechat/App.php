@@ -24,12 +24,12 @@ class App extends AbstractWechatGateway
     protected function doCharge(array $response, Charge $form): array
     {
         $parameters = [
-            'appid' => $this->config->get('app_id'),
+            'appid'     => $this->config->get('app_id'),
             'partnerid' => $this->config->get('mch_id'),
-            'prepayid' => $response['prepay_id'],
-            'package' => 'Sign=WXPay',
+            'prepayid'  => $response['prepay_id'],
+            'package'   => 'Sign=WXPay',
             'timestamp' => time(),
-            'noncestr' => uniqid(),
+            'noncestr'  => uniqid(),
         ];
         $parameters['sign'] = $this->sign($parameters);
 

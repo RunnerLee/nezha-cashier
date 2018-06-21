@@ -25,10 +25,10 @@ trait WechatH5Spider
     {
         $options = [
             RequestOptions::HEADERS => [
-                'Referer' => $this->config->get('site_url'),
-                'Host' => 'wx.tenpay.com',
-                'Accept-Language' => 'en,zh-CN;q=0.8,zh;q=0.6,en-US;q=0.4',
-                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Referer'                   => $this->config->get('site_url'),
+                'Host'                      => 'wx.tenpay.com',
+                'Accept-Language'           => 'en,zh-CN;q=0.8,zh;q=0.6,en-US;q=0.4',
+                'Accept'                    => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'Upgrade-Insecure-Requests' => '1',
             ],
         ];
