@@ -1,6 +1,7 @@
 <?php
 namespace Runner\NezhaCashier\Gateways\Pingan;
 
+use Runner\NezhaCashier\Exception\GatewayMethodNotSupportException;
 use Runner\NezhaCashier\Gateways\AbstractGateway;
 use Runner\NezhaCashier\Requests\Charge;
 use Runner\NezhaCashier\Requests\Close;
@@ -63,6 +64,10 @@ abstract class AbstractPinganGateway extends AbstractGateway
         return $this->doCharge($response, $form);
     }
 
+    /**
+     * @param Refund $form
+     * @return array
+     */
     public function refund(Refund $form): array
     {
         $options = [
@@ -78,63 +83,109 @@ abstract class AbstractPinganGateway extends AbstractGateway
             $options['trade_no'] = $form->get('trade_no');
         }
 
-        return $this->client->refund($options);
-    }
+        $response = $this->client->refund($options);
 
-    public function close(Close $form): array
-    {
-        // TODO: Implement close() method.
-    }
-
-    public function query(Query $form): array
-    {
-        // TODO: Implement query() method.
-    }
-
-    public function chargeNotify(array $receives): array
-    {
-        $tradeResult = json_decode($receives['trade_result'], true);
         return [
-            'order_id' => $receives['out_no'],
-            'status' => 'paid', // 微信只推送支付完成
-            'trade_sn' => $receives['ord_no'],
-            'buyer_identifiable_id' => $tradeResult['openid'],
-            'buyer_is_subscribed' => 'N' === $tradeResult['is_subscribe'] ? 'no' : 'yes',
-            'amount' => $receives['amount'],
-            'buyer_name' => '',
-            'paid_at' => $this->normalizePayTime($receives['pay_time']),
-            'raw' => $receives,
+            'refund_sn' => $response['ord_no'],
+            'refund_amount' => $response['trade_amount'],
+            'raw' => $response,
         ];
     }
 
+    /**
+     * @param Close $form
+     * @return array
+     */
+    public function close(Close $form): array
+    {
+        $options = [
+            'sign_type' => $this->config->get('sign_type', 'RSA'),
+            'out_no' => $form->get('order_id'),
+        ] ;
+
+        if(!empty($form->get('trade_sn'))) {
+            $options['ord_no'] = $form->get('trade_sn');
+        }
+
+        $this->client->cancelOrder($options);
+
+        return [];
+    }
+
+    /**
+     * @param Query $form
+     * @return array
+     */
+    public function query(Query $form): array
+    {
+        $options = [
+            'out_no' => $form->get('order_id')
+        ];
+
+        if(!empty($form->get('trade_sn'))) {
+            $options['ord_no'] = $form->get('trade_sn');
+        }
+
+        $response = $this->client->getOrderInfo($options);
+
+        return $this->doQuery($response, $form);
+    }
+
+    /**
+     * @param array $receives
+     * @return array
+     */
     public function refundNotify(array $receives): array
     {
+        throw new GatewayMethodNotSupportException('Pingan channels are not supported to send refund notify');
     }
 
+    /**
+     * @param array $receives
+     * @return array
+     */
     public function closeNotify(array $receives): array
     {
+        return [];
     }
 
+    /**
+     * @param array $receives
+     * @return bool
+     */
     public function verify($receives): bool
     {
         return $this->client->verifyResponse($receives);
     }
 
+    /**
+     * @return string
+     */
     public function success(): string
     {
         return $this->client->success();
     }
 
+    /**
+     * @return string
+     */
     public function fail(): string
     {
         return $this->client->failed();
     }
 
+    /**
+     * @return mixed
+     */
     public function receiveNotificationFromRequest()
     {
         return $_POST;
     }
 
+    /**
+     * @param $receives
+     * @return array
+     */
     public function convertNotificationToArray($receives): array
     {
         return $receives;
@@ -160,9 +211,33 @@ abstract class AbstractPinganGateway extends AbstractGateway
      */
     abstract protected function getTradeType(): string;
 
-    protected function normalizePayTime($payTime)
+    abstract protected function doQuery(array $response, Query $form) : array;
+
+    /**
+     * @param string $payTime
+     * @return string
+     */
+    protected function normalizePayTime($payTime) : string
     {
         preg_match('/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/', $payTime, $matches);
         return "$matches[1]-$matches[2]-$matches[3] $matches[4]:$matches[5]:$matches[6]";
+    }
+
+    /**
+     * @param int $status
+     * @return string
+     */
+    protected function normalizeStatus($status) : string
+    {
+        switch($status) {
+            case Client::ORDER_STATUS_SUCCESS:
+                return 'paid';
+                break;
+            case Client::ORDER_STATUS_CANCELED:
+                return 'closed';
+                break;
+            default:
+                return 'created';
+        }
     }
 }
