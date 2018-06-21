@@ -26,8 +26,8 @@ class Refund extends AbstractOption
         );
         $resolver->setDefaults(
             [
-                'reason' => '',
-                'trade_no' => '',
+                'reason'    => '',
+                'trade_no'  => '',
                 'refund_id' => '',
             ]
         );

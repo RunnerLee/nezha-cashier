@@ -24,7 +24,7 @@ class Query extends AbstractOption
         );
         $resolver->setDefaults(
             [
-                'trade_sn' => '',
+                'trade_sn'   => '',
                 'created_at' => '',
             ]
         );

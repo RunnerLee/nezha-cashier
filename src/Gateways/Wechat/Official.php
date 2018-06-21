@@ -38,11 +38,11 @@ class Official extends AbstractWechatGateway
     protected function doCharge(array $response, Charge $form): array
     {
         $parameters = [
-            'appId' => $this->config->get('app_id'),
+            'appId'     => $this->config->get('app_id'),
             'timeStamp' => time(),
-            'nonceStr' => uniqid(),
-            'package' => "prepay_id={$response['prepay_id']}",
-            'signType' => 'MD5',
+            'nonceStr'  => uniqid(),
+            'package'   => "prepay_id={$response['prepay_id']}",
+            'signType'  => 'MD5',
         ];
 
         $parameters['paySign'] = $this->sign($parameters);
@@ -61,9 +61,9 @@ class Official extends AbstractWechatGateway
     protected function getOpenId($code): string
     {
         $parameters = [
-            'appid' => $this->config->get('app_id'),
-            'secret' => $this->config->get('app_secret'),
-            'code' => $code,
+            'appid'      => $this->config->get('app_id'),
+            'secret'     => $this->config->get('app_secret'),
+            'code'       => $code,
             'grant_type' => 'authorization_code',
         ];
 

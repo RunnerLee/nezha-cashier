@@ -7,6 +7,7 @@
 
 namespace Runner\NezhaCashier;
 
+use InvalidArgumentException;
 use Runner\NezhaCashier\Contracts\GatewayInterface;
 use Runner\NezhaCashier\Exception\InvalidNotificationException;
 use Runner\NezhaCashier\Gateways\AbstractGateway;
@@ -15,7 +16,6 @@ use Runner\NezhaCashier\Responses\Query;
 use Runner\NezhaCashier\Responses\Refund;
 use Runner\NezhaCashier\Utils\AbstractOption;
 use Runner\NezhaCashier\Utils\Collection;
-use InvalidArgumentException;
 use Runner\NezhaCashier\Utils\Config;
 use Runner\NezhaCashier\Utils\Str;
 

@@ -86,15 +86,15 @@ class ExpressCheckout extends AbstractGateway
         }
 
         return [
-            'order_id' => $form->get('order_id'),
-            'status' => 'paid',
-            'trade_sn' => $result['L_TRANSACTIONID0'],
+            'order_id'              => $form->get('order_id'),
+            'status'                => 'paid',
+            'trade_sn'              => $result['L_TRANSACTIONID0'],
             'buyer_identifiable_id' => $result['L_EMAIL0'],
-            'buyer_name' => $result['L_EMAIL0'],
-            'buyer_email' => $result['L_EMAIL0'],
-            'amount' => Amount::dollarToCent($result['L_AMT0']),
-            'tax' => abs($result['L_FEEAMT0'] ?? 0),
-            'raw' => $result,
+            'buyer_name'            => $result['L_EMAIL0'],
+            'buyer_email'           => $result['L_EMAIL0'],
+            'amount'                => Amount::dollarToCent($result['L_AMT0']),
+            'tax'                   => abs($result['L_FEEAMT0'] ?? 0),
+            'raw'                   => $result,
         ];
     }
 
@@ -116,19 +116,19 @@ class ExpressCheckout extends AbstractGateway
         $transaction = $this->queryTransaction($receives['custom']);
 
         return [
-            'order_id' => $receives['custom'],
-            'status' => 'paid',
-            'trade_sn' => $receives['txn_id'],
-            'amount' => Amount::dollarToCent($receives['payment_gross']),
-            'buyer_name' => $transaction['L_NAME0'],
-            'buyer_email' => $transaction['L_EMAIL0'] ?? '',
-            'currency' => $receives['mc_currency'],
+            'order_id'              => $receives['custom'],
+            'status'                => 'paid',
+            'trade_sn'              => $receives['txn_id'],
+            'amount'                => Amount::dollarToCent($receives['payment_gross']),
+            'buyer_name'            => $transaction['L_NAME0'],
+            'buyer_email'           => $transaction['L_EMAIL0'] ?? '',
+            'currency'              => $receives['mc_currency'],
             'buyer_identifiable_id' => $transaction['L_EMAIL0'],
-            'paid_at' => strtotime($receives['payment_date']),
-            'tax' => $receives['payment_fee'],
-            'raw' => [
+            'paid_at'               => strtotime($receives['payment_date']),
+            'tax'                   => $receives['payment_fee'],
+            'raw'                   => [
                 'notification' => $receives,
-                'query' => $transaction,
+                'query'        => $transaction,
             ],
         ];
     }
@@ -233,18 +233,18 @@ class ExpressCheckout extends AbstractGateway
         $payload = $this->createPayload(
             array_merge(
                 [
-                    'METHOD' => 'SetExpressCheckout',
-                    'AMT' => Amount::centToDollar($form->get('amount')),
-                    'CUSTOM' => $form->get('order_id'),
-                    'CURRENCYCODE' => strtoupper($form->get('currency')),
-                    'PAYMENTACTION' => 'Sale',
-                    'CANCELURL' => $form->get('return_url'),
-                    'RETURNURL' => $form->get('return_url'),
-                    'INVNUM' => $form->get('order_id'),
-                    'DESC' => $form->get('description'),
-                    'BRANDNAME' => $this->config->get('brand_name'),
-                    'NOSHIPPING' => 1,
-                    'NOTIFYURL' => $this->config->get('notify_url'),
+                    'METHOD'                     => 'SetExpressCheckout',
+                    'AMT'                        => Amount::centToDollar($form->get('amount')),
+                    'CUSTOM'                     => $form->get('order_id'),
+                    'CURRENCYCODE'               => strtoupper($form->get('currency')),
+                    'PAYMENTACTION'              => 'Sale',
+                    'CANCELURL'                  => $form->get('return_url'),
+                    'RETURNURL'                  => $form->get('return_url'),
+                    'INVNUM'                     => $form->get('order_id'),
+                    'DESC'                       => $form->get('description'),
+                    'BRANDNAME'                  => $this->config->get('brand_name'),
+                    'NOSHIPPING'                 => 1,
+                    'NOTIFYURL'                  => $this->config->get('notify_url'),
                     'PAYMENTREQUEST_0_NOTIFYURL' => $this->config->get('notify_url'),
                 ],
                 $form->get('extras')
@@ -256,9 +256,9 @@ class ExpressCheckout extends AbstractGateway
         return [
             'charge_url' => self::WEB_GATEWAY.'?'.http_build_query(
                 [
-                    'cmd' => '_express-checkout-mobile',
+                    'cmd'        => '_express-checkout-mobile',
                     'useraction' => 'commit',
-                    'token' => $result['TOKEN'],
+                    'token'      => $result['TOKEN'],
                 ]
             ),
         ];
@@ -274,7 +274,7 @@ class ExpressCheckout extends AbstractGateway
         $payload = $this->createPayload(
             array_merge(
                 [
-                    'METHOD' => 'DoExpressCheckoutPayment',
+                    'METHOD'               => 'DoExpressCheckoutPayment',
                     'PAYMENTREQUEST_0_AMT' => Amount::centToDollar($form->get('amount')),
                     // 'TOKEN' => $form->find('extras.token'),
                     // 'PAYERID' => $form->find('extras.payer_id'),
@@ -300,18 +300,18 @@ class ExpressCheckout extends AbstractGateway
         return [
             'charge_url' => '',
             'parameters' => [
-                'order_id' => $form->get('order_id'),
-                'status' => 'paid',
-                'trade_sn' => $result['PAYMENTINFO_0_TRANSACTIONID'],
+                'order_id'              => $form->get('order_id'),
+                'status'                => 'paid',
+                'trade_sn'              => $result['PAYMENTINFO_0_TRANSACTIONID'],
                 'buyer_identifiable_id' => $transaction['L_EMAIL0'],
-                'amount' => Amount::dollarToCent($result['PAYMENTINFO_0_AMT']),
-                'tax' => $result['PAYMENTINFO_0_FEEAMT'],
-                'currency' => $result['PAYMENTINFO_0_CURRENCYCODE'],
-                'buyer_name' => $transaction['L_NAME0'],
-                'buyer_email' => $transaction['L_EMAIL0'],
-                'paid_at' => strtotime($result['TIMESTAMP']),
-                'charge_raw' => $result,
-                'query_raw' => $transaction,
+                'amount'                => Amount::dollarToCent($result['PAYMENTINFO_0_AMT']),
+                'tax'                   => $result['PAYMENTINFO_0_FEEAMT'],
+                'currency'              => $result['PAYMENTINFO_0_CURRENCYCODE'],
+                'buyer_name'            => $transaction['L_NAME0'],
+                'buyer_email'           => $transaction['L_EMAIL0'],
+                'paid_at'               => strtotime($result['TIMESTAMP']),
+                'charge_raw'            => $result,
+                'query_raw'             => $transaction,
             ],
         ];
     }
@@ -327,9 +327,9 @@ class ExpressCheckout extends AbstractGateway
         $payload = $this->createPayload(
             array_merge(
                 [
-                    'METHOD' => 'TransactionSearch',
+                    'METHOD'    => 'TransactionSearch',
                     'STARTDATE' => date('Y-m-d\TH:i:s\Z', $this->config->get('started_at')),
-                    'INVNUM' => $orderId,
+                    'INVNUM'    => $orderId,
                 ],
                 $extras
             )
@@ -349,10 +349,10 @@ class ExpressCheckout extends AbstractGateway
     {
         return array_merge(
             [
-                'USER' => $this->config->get('user'),
-                'PWD' => $this->config->get('password'),
+                'USER'      => $this->config->get('user'),
+                'PWD'       => $this->config->get('password'),
                 'SIGNATURE' => $this->config->get('signature'),
-                'VERSION' => 88,
+                'VERSION'   => 88,
             ],
             $parameters
         );

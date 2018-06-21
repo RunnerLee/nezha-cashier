@@ -25,8 +25,8 @@ class H5 extends AbstractWechatGateway
             'scene_info' => json_encode(
                 [
                     'h5_info' => [
-                        'type' => 'Wap',
-                        'wap_url' => $this->config->get('site_url'),
+                        'type'     => 'Wap',
+                        'wap_url'  => $this->config->get('site_url'),
                         'wap_name' => $this->config->get('site_name'),
                     ],
                 ]

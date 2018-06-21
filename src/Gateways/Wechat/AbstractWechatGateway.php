@@ -45,14 +45,14 @@ abstract class AbstractWechatGateway extends AbstractGateway
         $payload = $this->createPayload(
             array_merge(
                 [
-                    'body' => $form->get('subject'),
-                    'out_trade_no' => $form->get('order_id'),
-                    'fee_type' => $form->get('currency'),
-                    'total_fee' => $form->get('amount'),
+                    'body'             => $form->get('subject'),
+                    'out_trade_no'     => $form->get('order_id'),
+                    'fee_type'         => $form->get('currency'),
+                    'total_fee'        => $form->get('amount'),
                     'spbill_create_ip' => $form->get('user_ip'),
-                    'trade_type' => $this->getTradeType(),
-                    'notify_url' => $this->config->get('notify_url'),
-                    'detail' => $form->get('description'),
+                    'trade_type'       => $this->getTradeType(),
+                    'notify_url'       => $this->config->get('notify_url'),
+                    'detail'           => $form->get('description'),
                 ],
                 $this->prepareCharge($form)
             )
@@ -75,11 +75,11 @@ abstract class AbstractWechatGateway extends AbstractGateway
         $payload = $this->createPayload(
             array_merge(
                 [
-                    'out_trade_no' => $form->get('order_id'),
+                    'out_trade_no'  => $form->get('order_id'),
                     'out_refund_no' => $form->get('refund_id'),
-                    'total_fee' => $form->get('total_amount'),
-                    'refund_fee' => $form->get('refund_amount'),
-                    'refund_desc' => $form->get('reason'),
+                    'total_fee'     => $form->get('total_amount'),
+                    'refund_fee'    => $form->get('refund_amount'),
+                    'refund_desc'   => $form->get('reason'),
                 ],
                 $form->get('extras')
             )
@@ -93,9 +93,9 @@ abstract class AbstractWechatGateway extends AbstractGateway
         );
 
         return [
-            'refund_sn' => $response['refund_id'],
+            'refund_sn'     => $response['refund_id'],
             'refund_amount' => ($response['coupon_refund_fee'] + $response['cash_refund_fee']),
-            'raw' => $response,
+            'raw'           => $response,
         ];
     }
 
@@ -129,11 +129,11 @@ abstract class AbstractWechatGateway extends AbstractGateway
     public function query(Query $form): array
     {
         $parameters = [
-            'appid' => $this->config->get('app_id'),
-            'mch_id' => $this->config->get('mch_id'),
+            'appid'        => $this->config->get('app_id'),
+            'mch_id'       => $this->config->get('mch_id'),
             'out_trade_no' => $form->get('order_id'),
-            'nonce_str' => uniqid(),
-            'sign_type' => 'MD5',
+            'nonce_str'    => uniqid(),
+            'sign_type'    => 'MD5',
         ];
         $parameters['sign'] = $this->sign($parameters, $this->config->get('mch_secret'));
 
@@ -147,15 +147,15 @@ abstract class AbstractWechatGateway extends AbstractGateway
         }
 
         return [
-            'order_id' => $result['out_trade_no'],
-            'status' => $status,
-            'trade_sn' => $result['transaction_id'] ?? '',
+            'order_id'              => $result['out_trade_no'],
+            'status'                => $status,
+            'trade_sn'              => $result['transaction_id'] ?? '',
             'buyer_identifiable_id' => $result['openid'] ?? '',
-            'buyer_is_subscribed' => (isset($result['is_subscribe']) ? ('Y' === $result ? 'yes' : 'no') : 'no'),
-            'amount' => $amount,
-            'buyer_name' => '',
-            'paid_at' => (isset($result['time_end']) ? strtotime($result['time_end']) : 0),
-            'raw' => $result,
+            'buyer_is_subscribed'   => (isset($result['is_subscribe']) ? ('Y' === $result ? 'yes' : 'no') : 'no'),
+            'amount'                => $amount,
+            'buyer_name'            => '',
+            'paid_at'               => (isset($result['time_end']) ? strtotime($result['time_end']) : 0),
+            'raw'                   => $result,
         ];
     }
 
@@ -174,15 +174,15 @@ abstract class AbstractWechatGateway extends AbstractGateway
         $amount = $receives['cash_fee'] + ($receives['coupon_fee'] ?? 0);
 
         return [
-            'order_id' => $receives['out_trade_no'],
-            'status' => 'paid', // 微信只推送支付完成
-            'trade_sn' => $receives['transaction_id'],
+            'order_id'              => $receives['out_trade_no'],
+            'status'                => 'paid', // 微信只推送支付完成
+            'trade_sn'              => $receives['transaction_id'],
             'buyer_identifiable_id' => $receives['openid'],
-            'buyer_is_subscribed' => 'N' === $receives['is_subscribe'] ? 'no' : 'yes',
-            'amount' => $amount,
-            'buyer_name' => '',
-            'paid_at' => (isset($receives['time_end']) ? strtotime($receives['time_end']) : 0),
-            'raw' => $receives,
+            'buyer_is_subscribed'   => 'N' === $receives['is_subscribe'] ? 'no' : 'yes',
+            'amount'                => $amount,
+            'buyer_name'            => '',
+            'paid_at'               => (isset($receives['time_end']) ? strtotime($receives['time_end']) : 0),
+            'raw'                   => $receives,
         ];
     }
 
@@ -291,8 +291,8 @@ abstract class AbstractWechatGateway extends AbstractGateway
     {
         $payload = array_merge(
             [
-                'appid' => $this->config->get('app_id'),
-                'mch_id' => $this->config->get('mch_id'),
+                'appid'     => $this->config->get('app_id'),
+                'mch_id'    => $this->config->get('mch_id'),
                 'nonce_str' => uniqid(),
                 'sign_type' => 'MD5',
             ],
