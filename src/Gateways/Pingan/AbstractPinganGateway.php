@@ -2,6 +2,8 @@
 
 namespace Runner\NezhaCashier\Gateways\Pingan;
 
+use DateTime;
+use DateTimeZone;
 use Runner\NezhaCashier\Exception\GatewayMethodNotSupportException;
 use Runner\NezhaCashier\Gateways\AbstractGateway;
 use Runner\NezhaCashier\Requests\Charge;
@@ -10,8 +12,6 @@ use Runner\NezhaCashier\Requests\Query;
 use Runner\NezhaCashier\Requests\Refund;
 use Runner\NezhaCashier\Utils\Config;
 use Wangjian\PinganPay\Client;
-use DateTime;
-use DateTimeZone;
 
 abstract class AbstractPinganGateway extends AbstractGateway
 {
@@ -239,9 +239,11 @@ abstract class AbstractPinganGateway extends AbstractGateway
     }
 
     /**
-     * convert the date string to timestamp
+     * convert the date string to timestamp.
+     *
      * @param string $date
-     * @param int $timezone
+     * @param int    $timezone
+     *
      * @return int
      */
     protected function date2timestamp($date, $timezone = 8)
@@ -251,7 +253,6 @@ abstract class AbstractPinganGateway extends AbstractGateway
 
         return $tmpTimestamp - $timezone * 3600;
     }
-
 
     /**
      * @param int $status
