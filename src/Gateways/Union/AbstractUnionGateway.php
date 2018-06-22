@@ -59,14 +59,14 @@ abstract class AbstractUnionGateway extends AbstractGateway
     public function chargeNotify(array $receives): array
     {
         return [
-            'order_id' => $receives['orderId'],
-            'status' => 'paid',
-            'trade_sn' => $receives['queryId'],
+            'order_id'              => $receives['orderId'],
+            'status'                => 'paid',
+            'trade_sn'              => $receives['queryId'],
             'buyer_identifiable_id' => '',
-            'amount' => $receives['settleAmt'],
-            'buyer_name' => '',
-            'paid_at' => DateTime::createFromFormat('mdHis', $receives['traceTime'])->getTimestamp(),
-            'raw' => $receives,
+            'amount'                => $receives['settleAmt'],
+            'buyer_name'            => '',
+            'paid_at'               => DateTime::createFromFormat('mdHis', $receives['traceTime'])->getTimestamp(),
+            'raw'                   => $receives,
         ];
     }
 
@@ -162,13 +162,13 @@ abstract class AbstractUnionGateway extends AbstractGateway
     {
         $parameters = array_merge(
             [
-                'version' => '5.0.0',
-                'encoding' => 'UTF-8',
-                'certId' => $this->config->get('cert_id'),
-                'merId' => $this->config->get('mer_id'),
+                'version'    => '5.0.0',
+                'encoding'   => 'UTF-8',
+                'certId'     => $this->config->get('cert_id'),
+                'merId'      => $this->config->get('mer_id'),
                 'accessType' => '0',
                 'signMethod' => '01',
-                'bizType' => '000000',
+                'bizType'    => '000000',
             ],
             $parameters
         );

@@ -11,7 +11,6 @@ use Runner\NezhaCashier\Utils\Collection;
 
 class CollectionTest extends \PHPUnit_Framework_TestCase
 {
-
     public function testOffsetExists()
     {
         $collection = new Collection([
@@ -78,7 +77,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
                 'b' => [
                     'c' => [
                         'd' => 'hello world',
-                    ]
+                    ],
                 ],
             ],
         ]);
@@ -93,7 +92,6 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($data, $collection->all());
     }
 
-
     public function testSet()
     {
         $collection = new Collection();
@@ -106,7 +104,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
                     'b' => [
                         'c' => [
                             'd' => 'hello world',
-                        ]
+                        ],
                     ],
                 ],
             ],
@@ -121,10 +119,10 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
                     'b' => [
                         'c' => [
                             'd' => [
-                                0 => 'hello world',
+                                0   => 'hello world',
                                 'e' => 'php',
                             ],
-                        ]
+                        ],
                     ],
                 ],
             ],
@@ -139,7 +137,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
                 'b' => [
                     'c' => [
                         'd' => 'hello world',
-                    ]
+                    ],
                 ],
             ],
         ]);

@@ -21,9 +21,9 @@ class Mina extends Official
     protected function getOpenId($code): string
     {
         $parameters = [
-            'appid' => $this->config->get('app_id'),
-            'secret' => $this->config->get('app_secret'),
-            'js_code' => $code,
+            'appid'      => $this->config->get('app_id'),
+            'secret'     => $this->config->get('app_secret'),
+            'js_code'    => $code,
             'grant_type' => 'authorization_code',
         ];
 

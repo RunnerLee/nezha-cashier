@@ -9,6 +9,7 @@ namespace Runner\NezhaCashier\Gateways\Alipay;
 
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
+use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Runner\NezhaCashier\Exception\GatewayException;
 use Runner\NezhaCashier\Exception\GatewayMethodNotSupportException;
@@ -18,7 +19,6 @@ use Runner\NezhaCashier\Requests\Charge;
 use Runner\NezhaCashier\Requests\Close;
 use Runner\NezhaCashier\Requests\Query;
 use Runner\NezhaCashier\Requests\Refund;
-use InvalidArgumentException;
 use Runner\NezhaCashier\Utils\Amount;
 use Runner\NezhaCashier\Utils\HttpClient;
 
@@ -37,8 +37,8 @@ abstract class AbstractAlipayGateway extends AbstractGateway
             [
                 'out_trade_no' => $form->get('order_id'),
                 'total_amount' => Amount::centToDollar($form->get('amount')),
-                'subject' => $form->get('subject'),
-                'body' => $form->get('description'),
+                'subject'      => $form->get('subject'),
+                'body'         => $form->get('description'),
             ],
             $this->prepareCharge($form),
             $form->get('extras')
@@ -74,9 +74,9 @@ abstract class AbstractAlipayGateway extends AbstractGateway
             'alipay.trade.refund',
             array_merge(
                 [
-                    'out_trade_no' => $form->get('order_id'),
-                    'refund_amount' => Amount::centToDollar($form->get('refund_amount')),
-                    'refund_reason' => $form->get('reason'),
+                    'out_trade_no'   => $form->get('order_id'),
+                    'refund_amount'  => Amount::centToDollar($form->get('refund_amount')),
+                    'refund_reason'  => $form->get('reason'),
                     'out_request_no' => $form->get('refund_id'),
                 ],
                 $form->get('extras')
@@ -90,9 +90,9 @@ abstract class AbstractAlipayGateway extends AbstractGateway
         }
 
         return [
-            'refund_sn' => $response['trade_no'],
+            'refund_sn'     => $response['trade_no'],
             'refund_amount' => Amount::dollarToCent($response['refund_fee']),
-            'raw' => $response,
+            'raw'           => $response,
         ];
     }
 
@@ -127,22 +127,22 @@ abstract class AbstractAlipayGateway extends AbstractGateway
             'alipay.trade.query',
             [
                 'out_trade_no' => $form->get('order_id'),
-                'trade_no' => $form->get('trade_sn'),
+                'trade_no'     => $form->get('trade_sn'),
             ]
         );
 
         $result = $this->request($payload);
 
         return [
-            'order_id' => $result['out_trade_no'],
-            'status' => $this->formatTradeStatus($result['trade_status']),
-            'trade_sn' => $result['trade_no'],
+            'order_id'              => $result['out_trade_no'],
+            'status'                => $this->formatTradeStatus($result['trade_status']),
+            'trade_sn'              => $result['trade_no'],
             'buyer_identifiable_id' => $result['buyer_user_id'],
-            'amount' => Amount::dollarToCent($result['total_amount']),
-            'buyer_name' => $result['buyer_logon_id'],
+            'amount'                => Amount::dollarToCent($result['total_amount']),
+            'buyer_name'            => $result['buyer_logon_id'],
             // 支付宝打款时间, 作为付款时间有些争议
             'paid_at' => isset($result['send_pay_date']) ? strtotime($result['send_pay_date']) : 0,
-            'raw' => $result,
+            'raw'     => $result,
         ];
     }
 
@@ -154,14 +154,14 @@ abstract class AbstractAlipayGateway extends AbstractGateway
     public function chargeNotify(array $receives): array
     {
         return [
-            'order_id' => $receives['out_trade_no'],
-            'status' => $this->formatTradeStatus($receives['trade_status']),
-            'trade_sn' => $receives['trade_no'],
+            'order_id'              => $receives['out_trade_no'],
+            'status'                => $this->formatTradeStatus($receives['trade_status']),
+            'trade_sn'              => $receives['trade_no'],
             'buyer_identifiable_id' => $receives['buyer_id'],
-            'amount' => Amount::dollarToCent($receives['receipt_amount'] ?? 0),
-            'buyer_name' => '',
-            'paid_at' => (isset($receives['gmt_payment']) ? strtotime($receives['gmt_payment']) : 0),
-            'raw' => $receives,
+            'amount'                => Amount::dollarToCent($receives['receipt_amount'] ?? 0),
+            'buyer_name'            => '',
+            'paid_at'               => (isset($receives['gmt_payment']) ? strtotime($receives['gmt_payment']) : 0),
+            'raw'                   => $receives,
         ];
     }
 
@@ -259,15 +259,15 @@ abstract class AbstractAlipayGateway extends AbstractGateway
     protected function createPayload($method, array $content, $notifyUrl = '', $returnUrl = '')
     {
         $parameters = [
-            'app_id' => $this->config->get('app_id'),
-            'method' => $method,
-            'format' => 'JSON',
-            'return_url' => $returnUrl,
-            'charset' => 'utf8',
-            'sign_type' => 'RSA2',
-            'timestamp' => date('Y-m-d H:i:s'),
-            'version' => '1.0',
-            'notify_url' => $notifyUrl,
+            'app_id'      => $this->config->get('app_id'),
+            'method'      => $method,
+            'format'      => 'JSON',
+            'return_url'  => $returnUrl,
+            'charset'     => 'utf8',
+            'sign_type'   => 'RSA2',
+            'timestamp'   => date('Y-m-d H:i:s'),
+            'version'     => '1.0',
+            'notify_url'  => $notifyUrl,
             'biz_content' => json_encode($content),
         ];
         $parameters['sign'] = $this->sign($parameters);
@@ -384,9 +384,9 @@ abstract class AbstractAlipayGateway extends AbstractGateway
     protected function formatTradeStatus($status): string
     {
         $map = [
-            'TRADE_SUCCESS' => 'paid',
+            'TRADE_SUCCESS'  => 'paid',
             'WAIT_BUYER_PAY' => 'created',
-            'TRADE_CLOSED' => 'closed',
+            'TRADE_CLOSED'   => 'closed',
         ];
 
         return $map[$status];

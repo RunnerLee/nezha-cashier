@@ -24,15 +24,15 @@ class Web extends AbstractUnionGateway
         $payload = $this->createPayload(
             array_merge(
                 [
-                    'txnTime' => date('YmdHis', $form->get('created_at')),
-                    'txnType' => '01',
-                    'txnSubType' => '01',
-                    'frontUrl' => $form->get('return_url'),
-                    'backUrl' => $this->config->get('notify_url'),
-                    'channelType' => '08',
-                    'orderId' => $form->get('order_id'),
-                    'txnAmt' => $form->get('amount'),
-                    'currencyCode' => '156',
+                    'txnTime'        => date('YmdHis', $form->get('created_at')),
+                    'txnType'        => '01',
+                    'txnSubType'     => '01',
+                    'frontUrl'       => $form->get('return_url'),
+                    'backUrl'        => $this->config->get('notify_url'),
+                    'channelType'    => '08',
+                    'orderId'        => $form->get('order_id'),
+                    'txnAmt'         => $form->get('amount'),
+                    'currencyCode'   => '156',
                     'defaultPayType' => '0001',
                 ],
                 $form->get('extras')
@@ -57,10 +57,10 @@ class Web extends AbstractUnionGateway
         $payload = $this->createPayload(
             array_merge(
                 [
-                    'txnTime' => date('YmdHis', $form->get('created_at')),
-                    'txnType' => '00',
+                    'txnTime'    => date('YmdHis', $form->get('created_at')),
+                    'txnType'    => '00',
                     'txnSubType' => '00',
-                    'orderId' => $form->get('order_id'),
+                    'orderId'    => $form->get('order_id'),
                 ],
                 $form->get('extras')
             )
@@ -69,13 +69,13 @@ class Web extends AbstractUnionGateway
         $response = $this->request(self::WEB_QUERY_ORDER, $payload);
 
         return [
-            'order_id' => $response['orderId'],
-            'status' => $this->formatTradeStatus($response['origRespCode']),
-            'trade_sn' => $response['queryId'] ?? '',
+            'order_id'              => $response['orderId'],
+            'status'                => $this->formatTradeStatus($response['origRespCode']),
+            'trade_sn'              => $response['queryId'] ?? '',
             'buyer_identifiable_id' => '',
-            'amount' => ($response['settleAmt'] ?? 0),
-            'buyer_name' => '',
-            'raw' => $response,
+            'amount'                => ($response['settleAmt'] ?? 0),
+            'buyer_name'            => '',
+            'raw'                   => $response,
         ];
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Runner\NezhaCashier\Gateways\Pingan;
 
 use Runner\NezhaCashier\Requests\Charge;
@@ -14,13 +15,13 @@ class WechatH5 extends Wechat
             'scene_info' => json_encode(
                 [
                     'h5_info' => [
-                        'type' => 'Wap',
-                        'wap_url' => $this->config->get('site_url'),
+                        'type'     => 'Wap',
+                        'wap_url'  => $this->config->get('site_url'),
                         'wap_name' => $this->config->get('site_name'),
                     ],
                 ]
             ),
-            'trade_type' => $this->getTradeType()
+            'trade_type' => $this->getTradeType(),
         ];
 
         if ($this->config->get('spider')) {

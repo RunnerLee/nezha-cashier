@@ -27,16 +27,16 @@ class Query extends AbstractOption
         );
         $resolver->setDefaults(
             [
-                'amount' => 0,
-                'tax' => 0,
+                'amount'                => 0,
+                'tax'                   => 0,
                 'buyer_identifiable_id' => '',
-                'paid_at' => 0,
-                'currency' => 'CNY',
-                'buyer_name' => '',
-                'buyer_email' => '',
-                'buyer_phone_number' => '',
-                'buyer_is_subscribed' => 'no',
-                'buyer_extras' => [],
+                'paid_at'               => 0,
+                'currency'              => 'CNY',
+                'buyer_name'            => '',
+                'buyer_email'           => '',
+                'buyer_phone_number'    => '',
+                'buyer_is_subscribed'   => 'no',
+                'buyer_extras'          => [],
             ]
         );
         $resolver->setAllowedValues(

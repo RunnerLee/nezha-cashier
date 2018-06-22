@@ -8,9 +8,9 @@
 namespace Runner\NezhaCashier\Contracts;
 
 use Runner\NezhaCashier\Requests\Charge;
-use Runner\NezhaCashier\Requests\Refund;
 use Runner\NezhaCashier\Requests\Close;
 use Runner\NezhaCashier\Requests\Query;
+use Runner\NezhaCashier\Requests\Refund;
 
 interface GatewayInterface
 {

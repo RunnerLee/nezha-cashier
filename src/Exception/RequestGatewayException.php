@@ -7,8 +7,8 @@
 
 namespace Runner\NezhaCashier\Exception;
 
-use RuntimeException;
 use GuzzleHttp\Exception\RequestException;
+use RuntimeException;
 
 class RequestGatewayException extends RuntimeException
 {
