@@ -10,6 +10,8 @@ use Runner\NezhaCashier\Requests\Query;
 use Runner\NezhaCashier\Requests\Refund;
 use Runner\NezhaCashier\Utils\Config;
 use Wangjian\PinganPay\Client;
+use DateTime;
+use DateTimeZone;
 
 abstract class AbstractPinganGateway extends AbstractGateway
 {
@@ -235,6 +237,21 @@ abstract class AbstractPinganGateway extends AbstractGateway
 
         return "$matches[1]-$matches[2]-$matches[3] $matches[4]:$matches[5]:$matches[6]";
     }
+
+    /**
+     * convert the date string to timestamp
+     * @param string $date
+     * @param int $timezone
+     * @return int
+     */
+    protected function date2timestamp($date, $timezone = 8)
+    {
+        preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/', $date, $matches);
+        $tmpTimestamp = (new DateTime("$matches[1]-$matches[2]-$matches[3] $matches[4]:$matches[5]:$matches[6]", new DateTimeZone('UTC')))->getTimestamp();
+
+        return $tmpTimestamp - $timezone * 3600;
+    }
+
 
     /**
      * @param int $status
