@@ -20,7 +20,7 @@ abstract class Wechat extends AbstractPinganGateway
             'buyer_is_subscribed' => (isset($tradeResult['is_subscribe']) ? ('Y' === $tradeResult['is_subscribe'] ? 'yes' : 'no') : 'no'),
             'amount' => $response['trade_amount'],
             'buyer_name' => '',
-            'paid_at' => !empty($response['trade_time']) ? $response['trade_time'] : null,
+            'paid_at' => !empty($response['trade_time']) ? $this->date2timestamp($response['trade_time']) : 0,
             'raw' => $response,
         ];
     }
@@ -36,7 +36,7 @@ abstract class Wechat extends AbstractPinganGateway
             'buyer_is_subscribed' => 'N' === $tradeResult['is_subscribe'] ? 'no' : 'yes',
             'amount' => $receives['amount'],
             'buyer_name' => '',
-            'paid_at' => $this->normalizePayTime($receives['pay_time']),
+            'paid_at' => $this->date2timestamp($this->normalizePayTime($receives['pay_time'])),
             'raw' => $receives,
         ];
     }
