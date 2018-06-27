@@ -128,7 +128,7 @@ class Cashier
             if (!array_key_exists($channel, self::$extendGateways)) {
                 throw new InvalidArgumentException("gateway {$channel} is not supported");
             }
-            $class = self::$extendGateways[$class];
+            $class = self::$extendGateways[$channel];
         }
 
         return new $class($this->config);
