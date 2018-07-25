@@ -13,14 +13,13 @@ class Official extends AbstractWechatoverseaGateway
 {
     public function prepareCharge(Charge $form): array
     {
-        /*$openId = $form->has('extras.open_id')
+        $openId = $form->has('extras.open_id')
             ? $form->get('extras.open_id')
             : $this->getOpenId($form->get('extras.code'));
 
         return [
             'openid' => $openId,
-        ];*/
-        return [];
+        ];
     }
 
     public function doCharge(array $response, Charge $form): array
