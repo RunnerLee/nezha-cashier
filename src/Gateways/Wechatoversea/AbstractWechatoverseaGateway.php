@@ -133,11 +133,11 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
         $status = $this->formatTradeStatus($result['trade_state']);
 
         if ('paid' === $status) {
-            $amount = $result['cash_fee'] + ($result['coupon_fee'] ?? 0);
+            $amount = ($result['cash_fee'] ?? 0) + ($result['coupon_fee'] ?? 0);
         }
 
         return [
-            'order_id' => $result['out_trade_no'],
+            'order_id' => $result['out_trade_no'] ?? '',
             'status' => $status,
             'trade_sn' => $result['transaction_id'] ?? '',
             'buyer_identifiable_id' => $result['openid'] ?? '',
