@@ -214,7 +214,10 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
     {
         $receives = Xml::fromXml($receives);
 
-        return $receives['sign'] === $this->sign($receives);
+        return $receives['sign'] === $this->sign($receives)
+            && $receives['status'] == 0
+            && $receives['result_code'] == 0
+            && $receives['pay_result'] == 0;
     }
 
     /**
@@ -224,7 +227,7 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
      */
     public function success(): string
     {
-        return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
+        return 'success';
     }
 
     /**
@@ -234,7 +237,7 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
      */
     public function fail(): string
     {
-        return '<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[wrong]]></return_msg></xml>';
+        return 'fail';
     }
 
     /**
