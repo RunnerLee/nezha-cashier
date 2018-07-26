@@ -22,6 +22,8 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
     const UNIFIED_ORDER_SERVICE = 'pay.weixin.jspay';
     const UNIFIED_ORDER_QUERY = 'unified.trade.query';
     const UNIFIED_ORDER_REFUND = 'unified.trade.refund';
+    const UNIFIED_ORDER_REFUNDQUERY = 'unified.trade.refundquery';
+    const UNIFIED_ORDER_CLOSE = 'unified.trade.close';
 
     const MP_JSAPI_AUTH_URL = 'https://api.weixin.qq.com/sns/oauth2/access_token';
 
@@ -100,11 +102,12 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
     {
         $payload = $this->createPayload(
             [
+                'service' => self::UNIFIED_ORDER_CLOSE,
                 'out_trade_no' => $form->get('order_id'),
             ]
         );
 
-        $this->request(self::MCH_CLOSE_ORDER, $payload);
+        $this->request(self::PAY_API_HOST, $payload);
 
         return [];
     }
