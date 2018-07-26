@@ -20,6 +20,7 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
     const PAY_API_HOST = 'https://pay.wepayez.com/pay/gateway';
 
     const UNIFIED_ORDER_SERVICE = 'pay.weixin.jspay';
+    const UNIFIED_ORDER_QUERY = 'unified.trade.query';
 
     const MP_JSAPI_AUTH_URL = 'https://api.weixin.qq.com/sns/oauth2/access_token';
 
@@ -118,15 +119,15 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
     public function query(Query $form): array
     {
         $parameters = [
-            'appid'        => $this->config->get('app_id'),
-            'mch_id'       => $this->config->get('mch_id'),
+            'service' => self::UNIFIED_ORDER_QUERY,
+            'mch_id' => $this->config->get('mch_id'),
             'out_trade_no' => $form->get('order_id'),
-            'nonce_str'    => uniqid(),
-            'sign_type'    => 'MD5',
+            'nonce_str' => uniqid(),
+            'sign_type' => 'MD5',
         ];
-        $parameters['sign'] = $this->sign($parameters, $this->config->get('mch_secret'));
+        $parameters['sign'] = $this->sign($parameters);
 
-        $result = $this->request(self::MCH_QUERY_ORDER, $parameters);
+        $result = $this->request(self::PAY_API_HOST, $parameters);
 
         $amount = 0;
         $status = $this->formatTradeStatus($result['trade_state']);
@@ -136,15 +137,15 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
         }
 
         return [
-            'order_id'              => $result['out_trade_no'],
-            'status'                => $status,
-            'trade_sn'              => $result['transaction_id'] ?? '',
+            'order_id' => $result['out_trade_no'],
+            'status' => $status,
+            'trade_sn' => $result['transaction_id'] ?? '',
             'buyer_identifiable_id' => $result['openid'] ?? '',
-            'buyer_is_subscribed'   => (isset($result['is_subscribe']) ? ('Y' === $result ? 'yes' : 'no') : 'no'),
-            'amount'                => $amount,
-            'buyer_name'            => '',
-            'paid_at'               => (isset($result['time_end']) ? strtotime($result['time_end']) : 0),
-            'raw'                   => $result,
+            'buyer_is_subscribed' => (isset($result['is_subscribe']) ? ('Y' === $result ? 'yes' : 'no') : 'no'),
+            'amount' => $amount,
+            'buyer_name' => '',
+            'paid_at' => $this->formatTradeTime($result['time_end'] ?? ''),
+            'raw' => $result,
         ];
     }
 
@@ -356,5 +357,46 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
                 throw new RequestGatewayException('Wechat Gateway Error.', $exception);
             }
         );
+    }
+
+    /**
+     * @param $status
+     *
+     * @return string
+     */
+    protected function formatTradeStatus($status): string
+    {
+        switch ($status) {
+            case 'NOTPAY':
+            case 'REVERSE':
+                return 'created';
+            case 'CLOSED':
+                return 'closed';
+            case 'REFUND':
+            case 'REVOK':
+                return 'refund';
+            default:
+                return 'paid';
+        }
+    }
+
+    protected function formatTradeTime($time) : int
+    {
+        if(!preg_match('/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/', $time, $matches)) {
+            return 0;
+        }
+
+        return (new \DateTime(
+            sprintf(
+                '%s-%s-%s %s:%s:%s',
+                $matches[1],
+                $matches[2],
+                $matches[3],
+                $matches[4],
+                $matches[5],
+                $matches[6]
+            ),
+            new \DateTimeZone('PRC')
+        ))->getTimestamp();
     }
 }
