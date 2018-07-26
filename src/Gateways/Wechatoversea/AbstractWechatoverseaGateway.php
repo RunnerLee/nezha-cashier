@@ -174,7 +174,7 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
             'buyer_is_subscribed'   => 'N' === $receives['is_subscribe'] ? 'no' : 'yes',
             'amount'                => $amount,
             'buyer_name'            => '',
-            'paid_at'               => (isset($receives['time_end']) ? strtotime($receives['time_end']) : 0),
+            'paid_at'               => $this->formatTradeTime($receives['time_end'] ?? ''),
             'raw'                   => $receives,
         ];
     }
