@@ -86,7 +86,7 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
 
         return [
             'refund_sn'     => $response['refund_id'],
-            'refund_amount' => ($response['coupon_refund_fee'] + $response['cash_refund_fee']),
+            'refund_amount' => $response['refund_fee'],
             'raw'           => $response,
         ];
     }
