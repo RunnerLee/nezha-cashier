@@ -1,12 +1,13 @@
 <?php
+
 namespace Runner\NezhaCashier\Gateways\Wechatoversea;
 
-use Runner\NezhaCashier\Requests\Charge;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 use Runner\NezhaCashier\Exception\RequestGatewayException;
 use Runner\NezhaCashier\Exception\WechatOpenIdException;
+use Runner\NezhaCashier\Requests\Charge;
 use Runner\NezhaCashier\Utils\HttpClient;
 
 class Official extends AbstractWechatoverseaGateway
@@ -19,7 +20,7 @@ class Official extends AbstractWechatoverseaGateway
 
         return [
             'sub_openid' => $openId,
-            'is_raw' => 1,
+            'is_raw'     => 1,
         ];
     }
 

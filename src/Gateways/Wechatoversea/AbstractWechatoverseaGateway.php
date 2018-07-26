@@ -39,11 +39,11 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
         $payload = $this->createPayload(
             array_merge(
                 [
-                    'service' => self::UNIFIED_ORDER_SERVICE,
+                    'service'          => self::UNIFIED_ORDER_SERVICE,
                     'body'             => $form->get('subject'),
                     'out_trade_no'     => $form->get('order_id'),
                     'total_fee'        => $form->get('amount'),
-                    'mch_create_ip' => $form->get('user_ip'),
+                    'mch_create_ip'    => $form->get('user_ip'),
                     'notify_url'       => $this->config->get('notify_url'),
                     'detail'           => $form->get('description'),
                 ],
@@ -68,12 +68,12 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
         $payload = $this->createPayload(
             array_merge(
                 [
-                    'service' => self::UNIFIED_ORDER_REFUND,
+                    'service'       => self::UNIFIED_ORDER_REFUND,
                     'out_trade_no'  => $form->get('order_id'),
                     'out_refund_no' => $form->get('refund_id'),
                     'total_fee'     => $form->get('total_amount'),
                     'refund_fee'    => $form->get('refund_amount'),
-                    'op_user_id' => $this->config->get('mch_id'),
+                    'op_user_id'    => $this->config->get('mch_id'),
                 ],
                 $form->get('extras')
             )
@@ -102,7 +102,7 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
     {
         $payload = $this->createPayload(
             [
-                'service' => self::UNIFIED_ORDER_CLOSE,
+                'service'      => self::UNIFIED_ORDER_CLOSE,
                 'out_trade_no' => $form->get('order_id'),
             ]
         );
@@ -122,11 +122,11 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
     public function query(Query $form): array
     {
         $parameters = [
-            'service' => self::UNIFIED_ORDER_QUERY,
-            'mch_id' => $this->config->get('mch_id'),
+            'service'      => self::UNIFIED_ORDER_QUERY,
+            'mch_id'       => $this->config->get('mch_id'),
             'out_trade_no' => $form->get('order_id'),
-            'nonce_str' => uniqid(),
-            'sign_type' => 'MD5',
+            'nonce_str'    => uniqid(),
+            'sign_type'    => 'MD5',
         ];
         $parameters['sign'] = $this->sign($parameters);
 
@@ -140,15 +140,15 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
         }
 
         return [
-            'order_id' => $result['out_trade_no'] ?? '',
-            'status' => $status,
-            'trade_sn' => $result['transaction_id'] ?? '',
+            'order_id'              => $result['out_trade_no'] ?? '',
+            'status'                => $status,
+            'trade_sn'              => $result['transaction_id'] ?? '',
             'buyer_identifiable_id' => $result['openid'] ?? '',
-            'buyer_is_subscribed' => (isset($result['is_subscribe']) ? ('Y' === $result ? 'yes' : 'no') : 'no'),
-            'amount' => $amount,
-            'buyer_name' => '',
-            'paid_at' => $this->formatTradeTime($result['time_end'] ?? ''),
-            'raw' => $result,
+            'buyer_is_subscribed'   => (isset($result['is_subscribe']) ? ('Y' === $result ? 'yes' : 'no') : 'no'),
+            'amount'                => $amount,
+            'buyer_name'            => '',
+            'paid_at'               => $this->formatTradeTime($result['time_end'] ?? ''),
+            'raw'                   => $result,
         ];
     }
 
@@ -283,9 +283,9 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
         $payload = array_merge(
             [
                 'sub_appid'     => $this->config->get('app_id'),
-                'mch_id'    => $this->config->get('mch_id'),
-                'nonce_str' => uniqid(),
-                'sign_type' => 'MD5',
+                'mch_id'        => $this->config->get('mch_id'),
+                'nonce_str'     => uniqid(),
+                'sign_type'     => 'MD5',
             ],
             $payload
         );
@@ -388,7 +388,7 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
 
     protected function formatTradeTime($time) : int
     {
-        if(!preg_match('/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/', $time, $matches)) {
+        if (!preg_match('/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/', $time, $matches)) {
             return 0;
         }
 

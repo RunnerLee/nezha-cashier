@@ -1,10 +1,12 @@
 <?php
+
 namespace Runner\NezhaCashier\Utils;
 
 class Xml
 {
     /**
      * @param $string
+     *
      * @return array
      */
     public static function fromXml($xml)
