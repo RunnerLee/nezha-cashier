@@ -1,6 +1,6 @@
 <?php
 
-namespace Runner\NezhaCashier\Gateways\Wechatoversea;
+namespace Runner\NezhaCashier\Gateways\WechatOversea;
 
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
@@ -15,7 +15,7 @@ use Runner\NezhaCashier\Requests\Refund;
 use Runner\NezhaCashier\Utils\HttpClient;
 use Runner\NezhaCashier\Utils\Xml;
 
-abstract class AbstractWechatoverseaGateway extends AbstractGateway
+abstract class AbstractWechatOverseaGateway extends AbstractGateway
 {
     const PAY_API_HOST = 'https://pay.wepayez.com/pay/gateway';
 

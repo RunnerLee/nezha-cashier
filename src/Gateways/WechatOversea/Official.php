@@ -1,6 +1,6 @@
 <?php
 
-namespace Runner\NezhaCashier\Gateways\Wechatoversea;
+namespace Runner\NezhaCashier\Gateways\WechatOversea;
 
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
@@ -10,7 +10,7 @@ use Runner\NezhaCashier\Exception\WechatOpenIdException;
 use Runner\NezhaCashier\Requests\Charge;
 use Runner\NezhaCashier\Utils\HttpClient;
 
-class Official extends AbstractWechatoverseaGateway
+class Official extends AbstractWechatOverseaGateway
 {
     public function prepareCharge(Charge $form): array
     {
