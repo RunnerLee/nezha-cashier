@@ -339,7 +339,7 @@ abstract class AbstractWechatoverseaGateway extends AbstractGateway
             function (ResponseInterface $response) {
                 $result = Xml::fromXml((string) $response->getBody());
 
-                if (isset($result['err_code']) || 0 !== $result['status']) {
+                if (isset($result['err_code']) || 0 != $result['status']) {
                     throw new GatewayException(
                         sprintf(
                             'Wechat Gateway Error: %s, %s',

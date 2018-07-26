@@ -18,13 +18,17 @@ class Official extends AbstractWechatoverseaGateway
             : $this->getOpenId($form->get('extras.code'));
 
         return [
-            'openid' => $openId,
+            'sub_openid' => $openId,
+            'is_raw' => 1,
         ];
     }
 
     public function doCharge(array $response, Charge $form): array
     {
-        return $response;
+        return [
+            'charge_url' => '',
+            'parameters' => json_decode($response['pay_info'], true),
+        ];
     }
 
     protected function getOpenId($code): string
